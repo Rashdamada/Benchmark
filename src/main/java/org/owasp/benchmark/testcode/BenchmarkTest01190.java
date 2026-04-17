@@ -51,11 +51,25 @@ public class BenchmarkTest01190 extends HttpServlet {
 		param = java.net.URLDecoder.decode(param, "UTF-8");
 
 		String bar = new Test().doSomething(request, param);
-		
+
+		// Strict allow-list of permitted environment variable values. Any
+		// user-controlled input that is not in this set is rejected, so that
+		// attackers cannot influence the executed process (e.g. via LD_PRELOAD).
+		final java.util.Set<String> ALLOWED_ENV_VALUES = java.util.Collections.unmodifiableSet(
+				new java.util.HashSet<String>(java.util.Arrays.asList(
+						"safe1",
+						"safe2",
+						"safe3")));
+
+		if (bar == null || !ALLOWED_ENV_VALUES.contains(bar)) {
+			response.getWriter().println("Invalid value supplied for environment variable.");
+			return;
+		}
+
 		String cmd = org.owasp.benchmark.helpers.Utils.getInsecureOSCommandString(this.getClass().getClassLoader());
 		String[] args = {cmd};
         String[] argsEnv = { bar };
-        
+
 		Runtime r = Runtime.getRuntime();
 
 		try {
