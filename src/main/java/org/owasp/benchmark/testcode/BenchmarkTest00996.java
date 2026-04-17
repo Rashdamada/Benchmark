@@ -61,12 +61,17 @@ public class BenchmarkTest00996 extends HttpServlet {
 		}
 
 		String bar = new Test().doSomething(request, param);
-		
-		String sql = "{call " + bar + "}";
-				
+
+		// Use a parameterized stored procedure call with a hardcoded procedure name
+		// and placeholders for all arguments, so untrusted input from the
+		// BenchmarkTest00996 cookie cannot alter the SQL structure (CWE-89).
+		String sql = "{call verifyUserPassword(?,?)}";
+
 		try {
 			java.sql.Connection connection = org.owasp.benchmark.helpers.DatabaseHelper.getSqlConnection();
 			java.sql.CallableStatement statement = connection.prepareCall( sql );
+			statement.setString(1, bar);
+			statement.setString(2, "");
 		    java.sql.ResultSet rs = statement.executeQuery();
             org.owasp.benchmark.helpers.DatabaseHelper.printResults(rs, sql, response);
 
