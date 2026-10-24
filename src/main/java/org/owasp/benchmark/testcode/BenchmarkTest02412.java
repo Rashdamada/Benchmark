@@ -45,7 +45,10 @@ public class BenchmarkTest02412 extends HttpServlet {
 		if (param == null) param = "";
 
 		String bar = doSomething(request, param);
-		
+
+		// Sanitize bar to prevent command injection: allow only alphanumeric, spaces, and basic punctuation
+		bar = bar.replaceAll("[^a-zA-Z0-9 .,_\\-]", "");
+
 		String a1 = "";
 		String a2 = "";
 		String osName = System.getProperty("os.name");
